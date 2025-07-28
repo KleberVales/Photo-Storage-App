@@ -1,0 +1,82 @@
+buildscript {
+    ext {
+        springBootVersion = '3.3.1' // Última versão estável do Spring Boot 3.x
+        springDependencyManagementVersion = '1.1.6'
+        lombokVersion = '1.18.32'
+        postgresqlVersion = '42.7.3'
+        h2Version = '2.2.224'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
+        classpath "io.spring.gradle:dependency-management-plugin:$springDependencyManagementVersion"
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+
+    group = 'com.example'
+    version = '0.0.1-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    dependencies {
+        compileOnly "org.projectlombok:lombok:$lombokVersion"
+        annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+    }
+
+    tasks.withType(Test) {
+        useJUnitPlatform()
+    }
+}
+
+// Configuração para o microserviço de upload de fotos
+project(':services:photo-upload-service') {
+    apply plugin: 'org.springframework.boot'
+
+    dependencies {
+        implementation "org.springframework.boot:spring-boot-starter-web"
+        developmentOnly "org.springframework.boot:spring-boot-devtools"
+        annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+    }
+
+    jar { enabled = false }
+    bootJar {
+        archiveFileName = "photo-upload-service.jar"
+    }
+}
+
+// Configuração para o microserviço de armazenamento de fotos
+project(':services:photo-storage-service') {
+    apply plugin: 'org.springframework.boot'
+
+    dependencies {
+        implementation "org.springframework.boot:spring-boot-starter-web"
+        developmentOnly "org.springframework.boot:spring-boot-devtools"
+        annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+    }
+
+    jar { enabled = false }
+    bootJar {
+        archiveFileName = "photo-storage-service.jar"
+    }
+}
+
+// Módulo comum (biblioteca compartilhada)
+project(':common') {
+    // Herda todas as configurações acima de subprojects
+    // Adicione aqui apenas as dependências específicas se necessário
+}

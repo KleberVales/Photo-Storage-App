@@ -1,0 +1,18 @@
+{
+  "groups": [
+    {
+      "name": "photo-storage",
+      "type": "com.example.photoupload.config.PhotoStorageServiceProperties",
+      "sourceType": "com.example.photoupload.config.PhotoStorageServiceProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "photo-storage.service-url",
+      "type": "java.lang.String",
+      "description": "The base URL of the Photo Storage Service API. Example: http:\/\/localhost:8082 or http:\/\/photo-storage-service:8082 (in Docker)",
+      "sourceType": "com.example.photoupload.config.PhotoStorageServiceProperties"
+    }
+  ],
+  "hints": []
+}
