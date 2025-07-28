@@ -1,0 +1,73 @@
+version: '3.8' # Specify the Docker Compose file format version
+
+services:
+  # ----------------------------------------
+  # PostgreSQL Database Service
+  # ----------------------------------------
+  postgres:
+    image: postgres:16-alpine # Using a lightweight PostgreSQL 16 image
+    container_name: photo-app-postgres # A friendly name for the container
+    ports:
+      - "5432:5432" # Map host port 5432 to container port 5432
+    environment: # Environment variables for PostgreSQL
+      POSTGRES_DB: photodb # The name of the database to create
+      POSTGRES_USER: user # The database user
+      POSTGRES_PASSWORD: password # The database password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persistent volume for database data
+    networks:
+      - app-network # Connect to our custom network
+
+  # ----------------------------------------
+  # Photo Storage Service
+  # ----------------------------------------
+  photo-storage-service:
+    build:
+      context: ./services/photo-storage-service # Build context points to its Dockerfile location
+      dockerfile: Dockerfile # Specify the Dockerfile name
+    container_name: photo-storage-service # Docker container name (also used as hostname in the network)
+    ports:
+      - "8082:8082" # Map host port 8082 to container port 8082
+    environment: # Environment variables for Spring Boot application
+      # Override application.yml for Docker environment
+      SPRING_PROFILES_ACTIVE: docker # Activate the 'docker' Spring profile
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/photodb # Use 'postgres' as hostname
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update # Keep 'update' for dev; use 'validate' or 'none' for prod
+    depends_on: # Ensure postgres starts before this service
+      - postgres
+    networks:
+      - app-network # Connect to our custom network
+
+  # ----------------------------------------
+  # Photo Upload Service
+  # ----------------------------------------
+  photo-upload-service:
+    build:
+      context: ./services/photo-upload-service # Build context points to its Dockerfile location
+      dockerfile: Dockerfile # Specify the Dockerfile name
+    container_name: photo-upload-service # Docker container name (also used as hostname in the network)
+    ports:
+      - "8081:8081" # Map host port 8081 to container port 8081
+    environment: # Environment variables for Spring Boot application
+      # Override application.yml for Docker environment
+      SPRING_PROFILES_ACTIVE: docker # Activate the 'docker' Spring profile
+      PHOTO_STORAGE_SERVICE_URL: http://photo-storage-service:8082 # Use 'photo-storage-service' as hostname
+    depends_on: # Ensure photo-storage-service starts before this service
+      - photo-storage-service
+    networks:
+      - app-network # Connect to our custom network
+
+# ----------------------------------------
+# Docker Volumes for Data Persistence
+# ----------------------------------------
+volumes:
+  postgres_data: # Define the named volume for PostgreSQL data
+
+# ----------------------------------------
+# Docker Networks for Inter-Service Communication
+# ----------------------------------------
+networks:
+  app-network: # Define a custom bridge network
+    driver: bridge # Default driver, explicitly stated

@@ -1,0 +1,87 @@
+buildscript {
+    ext {
+        springBootVersion = '3.3.1' // Use latest stable Spring Boot 3.x
+        springDependencyManagementVersion = '1.1.6' // Use latest stable
+        lombokVersion = '1.18.32' // Use latest stable Lombok
+        postgresqlVersion = '42.7.3' // Use latest stable PostgreSQL driver
+        h2Version = '2.2.224' // Use latest stable H2
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
+        classpath "io.spring.gradle:dependency-management-plugin:$springDependencyManagementVersion"
+        classpath "org.projectlombok:lombok:$lombokVersion" // For annotation processing configuration
+    }
+}
+
+// Apply Java plugin globally if all subprojects are Java projects
+apply plugin: 'java'
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+
+    // Configure common Java version for all subprojects
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    group = 'com.example'
+    version = '0.0.1-SNAPSHOT'
+
+    tasks.withType(Test) {
+        useJUnitPlatform()
+    }
+}
+
+subprojects {
+    // Common Lombok configuration for all modules that use it
+    dependencies {
+        compileOnly "org.projectlombok:lombok:$lombokVersion"
+        annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    }
+}
+
+// Configuration specific to Spring Boot microservices
+project(':services:photo-upload-service') {
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    dependencies {
+        developmentOnly 'org.springframework.boot:spring-boot-devtools'
+        annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+        // Spring Boot Test Starter is typically handled in module-specific build.gradle
+    }
+
+    jar { enabled = false } // Disable plain JAR creation
+    bootJar {
+        archiveFileName = "photo-upload-service.jar"
+    }
+}
+
+project(':services:photo-storage-service') {
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    dependencies {
+        developmentOnly 'org.springframework.boot:spring-boot-devtools'
+        annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+        // Spring Boot Test Starter is typically handled in module-specific build.gradle
+    }
+
+    jar { enabled = false } // Disable plain JAR creation
+    bootJar {
+        archiveFileName = "photo-storage-service.jar"
+    }
+}
+
+// Common module doesn't need Spring Boot plugins
+project(':common') {
+    // No specific Spring Boot plugins or extensive dependencies needed here.
+    // Its dependencies (Lombok) are already covered by the 'subprojects' block.
+}
