@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+dependencies {
+    // Spring Boot Starter Web para criação de endpoints REST
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Spring Data JPA para interação com banco de dados via ORM
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Driver JDBC do PostgreSQL
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // Módulo comum (DTOs compartilhados)
+    implementation project(':common')
+
+    // Dependências de teste
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'com.h2database:h2'
+
+    // Suporte a anotações do Lombok
+    compileOnly "org.projectlombok:lombok:1.18.32"
+    annotationProcessor "org.projectlombok:lombok:1.18.32"
+
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+jar { enabled = false }
+
+bootJar {
+    archiveFileName = "photo-storage-service.jar"
+}

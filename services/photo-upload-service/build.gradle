@@ -1,37 +1,35 @@
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.3.1'
-    id 'io.spring.dependency-management' version '1.1.6'
-}
-
-repositories {
-    mavenCentral()
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
+// This file should primarily contain dependencies specific to photo-upload-service.
+// The following configurations are handled in the root build.gradle for this project:
+// - plugins (java, org.springframework.boot, io.spring.dependency-management)
+// - repositories (mavenCentral())
+// - java toolchain version (Java 21)
+// - common Lombok dependencies (compileOnly, annotationProcessor)
+// - tasks.named('test') configuration
+// - jar and bootJar configuration
 
 dependencies {
+    // Spring Boot Starter Web for building REST endpoints
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
-    compileOnly "org.projectlombok:lombok:1.18.32"
-    annotationProcessor "org.projectlombok:lombok:1.18.32"
+    // REQUIRED: Spring Boot Starter WebFlux for WebClient and reactive types (Mono, Flux)
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
+    // Common module for shared DTOs (like PhotoUploadRequest)
+    // This allows photo-upload-service to use the DTOs defined in the common module.
+    implementation project(':common')
+
+    // Spring Boot DevTools for hot reloading during development (optional)
+    // This is already applied from the root build.gradle's project-specific block,
+    // but explicitly listing it here can sometimes help IDEs recognize it better.
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // Annotation processor for @ConfigurationProperties (optional, for IDE support)
+    // Also applied from root, but can be here for clarity.
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
+    // Spring Boot Test Starter for unit and integration tests
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-}
 
-tasks.named('test') {
-    useJUnitPlatform()
-}
-
-jar { enabled = false }
-
-bootJar {
-    archiveFileName = "photo-upload-service.jar"
+    // REQUIRED: For testing reactive code, specifically WebClient interactions
+    testImplementation 'io.projectreactor:reactor-test'
 }

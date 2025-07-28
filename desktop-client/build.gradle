@@ -1,0 +1,9 @@
+// This file is intentionally minimal as much of the configuration
+// (plugins, JavaFX setup, Java version, repositories, mainClassName)
+// is handled by the ':desktop-client' block in the root build.gradle.
+
+dependencies {
+    // All specific dependencies for the desktop client are listed
+    // in the 'project(':desktop-client')' block in the root build.gradle.kts.
+    // No need to repeat them here.
+}

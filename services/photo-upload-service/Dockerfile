@@ -1,6 +1,7 @@
 # Use a lightweight OpenJDK 21 JRE image as the base image.
 # 'slim-bullseye' is based on Debian Bullseye and is a good balance of size and functionality.
-FROM openjdk:21-jre-slim-bullseye
+FROM eclipse-temurin:21-jdk-jammy
+
 
 # Set the working directory inside the container.
 # All subsequent commands will be executed relative to this directory.

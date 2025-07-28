@@ -1,30 +1,26 @@
-buildscript {
-    ext {
-        springBootVersion = '3.3.1' // Última versão estável do Spring Boot 3.x
-        springDependencyManagementVersion = '1.1.6'
-        lombokVersion = '1.18.32'
-        postgresqlVersion = '42.7.3'
-        h2Version = '2.2.224'
-    }
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
-        classpath "io.spring.gradle:dependency-management-plugin:$springDependencyManagementVersion"
-    }
+plugins {
+    id 'org.springframework.boot' version '3.3.1' apply false
+    id 'io.spring.dependency-management' version '1.1.6' apply false
+    id 'org.openjfx.javafxplugin' version '0.0.13' apply false
 }
 
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'io.spring.dependency-management'
+ext {
+    lombokVersion = '1.18.32'
+    postgresqlVersion = '42.7.3'
+    h2Version = '2.2.224'
+    javafxVersion = "21"
+}
 
+allprojects {
     group = 'com.example'
     version = '0.0.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
+        gradlePluginPortal()
     }
+
+    apply plugin: 'java'
 
     java {
         toolchain {
@@ -32,51 +28,100 @@ subprojects {
         }
     }
 
-    dependencies {
-        compileOnly "org.projectlombok:lombok:$lombokVersion"
-        annotationProcessor "org.projectlombok:lombok:$lombokVersion"
-        testImplementation 'org.junit.jupiter:junit-jupiter'
-    }
-
     tasks.withType(Test) {
         useJUnitPlatform()
     }
-}
-
-// Configuração para o microserviço de upload de fotos
-project(':services:photo-upload-service') {
-    apply plugin: 'org.springframework.boot'
 
     dependencies {
-        implementation "org.springframework.boot:spring-boot-starter-web"
-        developmentOnly "org.springframework.boot:spring-boot-devtools"
-        annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+        compileOnly "org.projectlombok:lombok:$lombokVersion"
+        annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    }
+}
+
+project(':common') {
+    // Pode conter utilitários, DTOs, etc.
+}
+
+project(':services:photo-upload-service') {
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-webflux'
+        implementation project(':common')
+
+        developmentOnly 'org.springframework.boot:spring-boot-devtools'
+        annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'io.projectreactor:reactor-test'
     }
 
     jar { enabled = false }
+
     bootJar {
         archiveFileName = "photo-upload-service.jar"
     }
 }
 
-// Configuração para o microserviço de armazenamento de fotos
 project(':services:photo-storage-service') {
     apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
 
     dependencies {
-        implementation "org.springframework.boot:spring-boot-starter-web"
-        developmentOnly "org.springframework.boot:spring-boot-devtools"
-        annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+        implementation project(':common')
+
+        runtimeOnly "org.postgresql:postgresql:$postgresqlVersion"
+        runtimeOnly "com.h2database:h2:$h2Version"
+
+        developmentOnly 'org.springframework.boot:spring-boot-devtools'
+        annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
     }
 
     jar { enabled = false }
+
     bootJar {
         archiveFileName = "photo-storage-service.jar"
     }
 }
 
-// Módulo comum (biblioteca compartilhada)
-project(':common') {
-    // Herda todas as configurações acima de subprojects
-    // Adicione aqui apenas as dependências específicas se necessário
+project(':desktop-client') {
+    apply plugin: 'org.openjfx.javafxplugin'
+
+    javafx {
+        version = rootProject.ext.javafxVersion
+        modules = [ 'javafx.controls', 'javafx.fxml' ]
+    }
+
+    dependencies {
+        implementation project(':common')
+        implementation "com.fasterxml.jackson.core:jackson-databind:2.17.2"
+
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+    }
+
+    jar {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+        manifest {
+            attributes 'Main-Class': 'com.example.desktop.DesktopClientApplication'
+        }
+
+        from {
+            configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        }
+
+        archiveClassifier.set('fat')
+        archiveBaseName.set('photo-desktop-client')
+    }
+
+    tasks.withType(JavaExec).configureEach {
+        mainClass.set('com.example.desktop.DesktopClientApplication')
+    }
 }

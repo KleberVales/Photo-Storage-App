@@ -1,0 +1,22 @@
+# Server Configuration
+server:
+  port: 8081 # The port on which the photo-upload-service will run.
+
+# Spring Application Configuration
+spring:
+  application:
+    name: photo-upload-service # A logical name for this application, useful for logging, monitoring, and service discovery.
+
+# Custom Properties for Photo Storage Service Connection
+# These properties are picked up by the PhotoStorageServiceProperties class (@ConfigurationProperties(prefix="photo-storage"))
+photo-storage:
+  # The base URL for the Photo Storage Service API.
+  # When running locally (outside Docker Compose), use localhost and the port of photo-storage-service.
+  # The photo-storage-service is configured to run on port 8082.
+  service-url: http://localhost:8082
+
+  # When running within Docker Compose, the hostname will be the name of the service
+  # as defined in docker-compose.yml (e.g., 'photo-storage-service').
+  # You'd typically use profiles (e.g., dev, prod, docker) to switch this URL.
+  # For now, keep localhost for local testing. We'll adjust for Docker Compose later.
+  # service-url: http://photo-storage-service:8082 # Example for Docker Compose environment

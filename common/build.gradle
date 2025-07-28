@@ -1,0 +1,16 @@
+// No plugins block here, as 'java' is applied from the root build.gradle for this project.
+
+dependencies {
+    // Lombok is needed here because the DTO uses Lombok annotations
+    // The 'compileOnly' and 'annotationProcessor' are inherited from the root build.gradle's
+    // 'allprojects' or 'subprojects' block, so you don't need to specify versions here.
+    // If you didn't have Lombok in root's allprojects, you'd add:
+    // compileOnly 'org.projectlombok:lombok'
+    // annotationProcessor 'org.projectlombok:lombok'
+}
+
+// Since this is a simple Java library, it doesn't need to create an executable JAR.
+// The default 'jar' task provided by the 'java' plugin is sufficient if you needed
+// to publish this as a standalone library.
+// We don't need to explicitly disable 'jar' or configure 'bootJar' because no
+// Spring Boot plugins are applied here.
