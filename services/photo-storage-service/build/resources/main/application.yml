@@ -1,0 +1,11 @@
+server:
+  port: 8081 # photo-upload-service will run on port 8081
+
+spring:
+  application:
+    name: photo-upload-service
+  main:
+    allow-bean-definition-overriding: true
+
+photo-storage:
+  service-url: http://photo-storage-service:8082 # Points to the photo-storage-service container

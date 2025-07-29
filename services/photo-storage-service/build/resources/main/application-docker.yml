@@ -1,0 +1,25 @@
+# C:\Users\ksdca\workspace\photo-storage-app\services\photo-storage-service\src\main\resources\application-docker.yml
+server:
+  port: 8082 # photo-storage-service will run on port 8082 within Docker network
+
+spring:
+  application:
+    name: photo-storage-service
+  datasource:
+    url: jdbc:postgresql://photo-app-postgres:5432/photo_storage_db
+    username: user
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update # This will create/update tables automatically
+    show-sql: true # For debugging, shows SQL queries in logs
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  main:
+    allow-bean-definition-overriding: true
